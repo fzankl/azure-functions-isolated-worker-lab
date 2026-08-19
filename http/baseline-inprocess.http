@@ -1,0 +1,19 @@
+### Starting point — in-process, .NET 8, working baseline
+POST http://localhost:7071/api/orders
+Content-Type: application/json
+
+{
+  "OrderId": "ORD-1",
+  "customer_name": "Ada",
+  "Quantity": 2
+}
+
+### Invalid payload — expect 400
+POST http://localhost:7071/api/orders
+Content-Type: application/json
+
+{
+  "OrderId": "",
+  "customer_name": "Ada",
+  "Quantity": 0
+}

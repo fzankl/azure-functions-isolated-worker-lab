@@ -1,0 +1,11 @@
+bin/
+obj/
+.vs/
+*.user
+__azurite_db*__.json
+__blobstorage__/
+__queuestorage__/
+__tablestorage__/
+azurite/
+*.log
+artifacts/

@@ -1,0 +1,9 @@
+# Always check out shell scripts with LF, regardless of core.autocrlf.
+# Without this line, Git on Windows (core.autocrlf=true) checks out CRLF.
+# Git Bash tolerates that, other shells and Linux runs do not.
+*.sh text eol=lf
+
+# PowerShell and Windows batch files with CRLF.
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
