@@ -1,6 +1,6 @@
 # HTTP 200, and the Data Is Gone: A Runnable Azure Functions Migration Sample
 
-You are looking at **one tagged state** of this repository: the in-process starting point, before the migration to the isolated worker model. Every later tag reproduces one failure that shows up on the way, or the resolution of one.
+You are looking at **one tagged state** of this repository. Each tag reproduces a single failure that shows up when a C# function app is migrated from the in-process model to the isolated worker model, or the resolution of one.
 
 **The documentation is on `main`, not here.** A tag would freeze it at its own moment, and that moment is stale after the next correction. The same reason keeps `docs/` off the tags.
 
@@ -16,10 +16,12 @@ docker run -d --name azurite-demo -p 10000:10000 -p 10001:10001 -p 10002:10002 \
 
 cd src/OrderProcessor
 dotnet build
-func start
+dotnet run
 ```
 
-This state needs `func start`, unlike the isolated tags that use `dotnet run`. An in-process project is a library that the host loads, not an executable. `dotnet run` refuses it with *"The current OutputType is 'Library'"*. It also needs `FUNCTIONS_INPROC_NET8_ENABLED=1`, which is already set in `local.settings.json`.
+`dotnet run` starts the Functions host. This state builds with the `Azure.Functions.Sdk` 1.0.1 MSBuild SDK, and running it needs the Azure Functions Core Tools installed.
+
+Several tags fail on purpose: the build breaks, a call returns 500, or a 200 comes back with a field silently gone. Which one does what is in the tag list linked above.
 
 ## License
 
