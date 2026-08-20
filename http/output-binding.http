@@ -1,5 +1,6 @@
-### Output binding — [QueueOutput] on the out parameter, error CS0592
-### This state does not compile. The call is here for completeness only.
+### Output binding — binding as a property of the return class
+### Note: this state compiles, but the call returns 500.
+### The cause is the synchronous read of the request body, see docs/sync-read.md.
 POST http://localhost:7071/api/orders
 Content-Type: application/json
 

@@ -9,9 +9,8 @@ namespace OrderProcessor;
 public static class OrderFunction
 {
     [Function("Order")]
-    public static IActionResult Run(
+    public static OrderFunctionResult Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "orders")] HttpRequest req,
-        [QueueOutput("orders")] out string message,
         ILogger log)
     {
         string body = new StreamReader(req.Body).ReadToEnd();
@@ -20,16 +19,29 @@ public static class OrderFunction
         if (order is null || string.IsNullOrWhiteSpace(order.OrderId) || order.Quantity <= 0)
         {
             log.LogWarning("Rejected invalid order payload.");
-            message = string.Empty;
-            return new BadRequestObjectResult("OrderId must be set and Quantity must be greater than zero.");
+            return new OrderFunctionResult
+            {
+                HttpResponse = new BadRequestObjectResult("OrderId must be set and Quantity must be greater than zero.")
+            };
         }
 
         log.LogInformation("Order {OrderId} for {CustomerName} accepted.", order.OrderId, order.CustomerName);
 
-        message = JsonConvert.SerializeObject(order);
-
-        return new OkObjectResult(order);
+        return new OrderFunctionResult
+        {
+            QueueMessage = JsonConvert.SerializeObject(order),
+            HttpResponse = new OkObjectResult(order)
+        };
     }
+}
+
+public class OrderFunctionResult
+{
+    [QueueOutput("orders")]
+    public string? QueueMessage { get; set; }
+
+    [HttpResult]
+    public IActionResult? HttpResponse { get; set; }
 }
 
 public class OrderRequest
