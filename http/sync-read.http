@@ -1,0 +1,10 @@
+### Synchronous read — StreamReader(req.Body).ReadToEnd() on the Kestrel stream
+### Expected: 500, "Synchronous operations are disallowed" in the host log.
+POST http://localhost:7071/api/orders
+Content-Type: application/json
+
+{
+  "OrderId": "ORD-2",
+  "customer_name": "Grace",
+  "Quantity": 3
+}
