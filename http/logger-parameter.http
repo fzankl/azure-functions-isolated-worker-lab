@@ -1,0 +1,10 @@
+### Logger parameter — ILogger as a bare parameter, as in the in-process model
+### Expected: 500, ArgumentNullException "Value cannot be null. (Parameter 'logger')"
+POST http://localhost:7071/api/orders
+Content-Type: application/json
+
+{
+  "OrderId": "ORD-1",
+  "customer_name": "Ada",
+  "Quantity": 2
+}
