@@ -6,26 +6,29 @@ using Newtonsoft.Json;
 
 namespace OrderProcessor;
 
-public static class OrderFunction
+public sealed class OrderFunction
 {
+    private readonly ILogger<OrderFunction> _logger;
+
+    public OrderFunction(ILogger<OrderFunction> logger) => _logger = logger;
+
     [Function("Order")]
-    public static OrderFunctionResult Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "orders")] HttpRequest req,
-        ILogger log)
+    public OrderFunctionResult Run(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "orders")] HttpRequest req)
     {
         string body = new StreamReader(req.Body).ReadToEnd();
         var order = JsonConvert.DeserializeObject<OrderRequest>(body);
 
         if (order is null || string.IsNullOrWhiteSpace(order.OrderId) || order.Quantity <= 0)
         {
-            log.LogWarning("Rejected invalid order payload.");
+            _logger.LogWarning("Rejected invalid order payload.");
             return new OrderFunctionResult
             {
                 HttpResponse = new BadRequestObjectResult("OrderId must be set and Quantity must be greater than zero.")
             };
         }
 
-        log.LogInformation("Order {OrderId} for {CustomerName} accepted.", order.OrderId, order.CustomerName);
+        _logger.LogInformation("Order {OrderId} for {CustomerName} accepted.", order.OrderId, order.CustomerName);
 
         return new OrderFunctionResult
         {
