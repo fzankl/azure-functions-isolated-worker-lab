@@ -13,11 +13,10 @@ public sealed class OrderFunction
     public OrderFunction(ILogger<OrderFunction> logger) => _logger = logger;
 
     [Function("Order")]
-    public OrderFunctionResult Run(
+    public async Task<OrderFunctionResult> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "orders")] HttpRequest req)
     {
-        string body = new StreamReader(req.Body).ReadToEnd();
-        var order = JsonConvert.DeserializeObject<OrderRequest>(body);
+        var order = await req.ReadFromJsonAsync<OrderRequest>();
 
         if (order is null || string.IsNullOrWhiteSpace(order.OrderId) || order.Quantity <= 0)
         {

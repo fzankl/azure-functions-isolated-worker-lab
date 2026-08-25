@@ -1,0 +1,12 @@
+### Serialization attributes — identical call against all five tags
+### (serializer-attributes-broken, serializer-attributes-worker-noop,
+###  serializer-attributes-fixed-stj, serializer-attributes-fixed-newtonsoft,
+###  serializer-attributes-fixed-frombody)
+POST http://localhost:7071/api/orders
+Content-Type: application/json
+
+{
+  "OrderId": "ORD-5",
+  "customer_name": "Ada",
+  "Quantity": 1
+}
