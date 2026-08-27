@@ -1,8 +1,9 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace OrderProcessor;
 
@@ -31,7 +32,7 @@ public sealed class OrderFunction
 
         return new OrderFunctionResult
         {
-            QueueMessage = JsonConvert.SerializeObject(order),
+            QueueMessage = JsonSerializer.Serialize(order),
             HttpResponse = new OkObjectResult(order)
         };
     }
@@ -50,7 +51,7 @@ public class OrderRequest
 {
     public string? OrderId { get; set; }
 
-    [JsonProperty("customer_name")]
+    [JsonPropertyName("customer_name")]
     public string? CustomerName { get; set; }
 
     public int Quantity { get; set; }
