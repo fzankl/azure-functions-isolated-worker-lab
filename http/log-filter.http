@@ -1,0 +1,2 @@
+### Log filter — dump the registered LoggerFilterOptions.Rules
+GET http://localhost:7071/api/diagnostics/log-filters
