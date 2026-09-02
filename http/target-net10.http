@@ -1,0 +1,15 @@
+### Target state — .NET 10 isolated, all resolutions applied
+POST http://localhost:7071/api/orders
+Content-Type: application/json
+
+{
+  "OrderId": "ORD-7",
+  "customer_name": "Ada",
+  "Quantity": 1
+}
+
+### LoggerFilterOptions — no Application Insights rule capping Information logs
+GET http://localhost:7071/api/diagnostics/log-filters
+
+### Bound RetryOptions — "MaxRetries": null in appsettings.json actually binds to 0 on .NET 10
+GET http://localhost:7071/api/diagnostics/retry-options

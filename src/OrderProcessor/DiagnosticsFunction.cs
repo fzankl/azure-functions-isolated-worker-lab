@@ -10,11 +10,16 @@ public sealed class DiagnosticsFunction
 {
     private readonly ILogger<DiagnosticsFunction> _logger;
     private readonly LoggerFilterOptions _filterOptions;
+    private readonly RetryOptions _retryOptions;
 
-    public DiagnosticsFunction(ILogger<DiagnosticsFunction> logger, IOptions<LoggerFilterOptions> filterOptions)
+    public DiagnosticsFunction(
+        ILogger<DiagnosticsFunction> logger,
+        IOptions<LoggerFilterOptions> filterOptions,
+        IOptions<RetryOptions> retryOptions)
     {
         _logger = logger;
         _filterOptions = filterOptions.Value;
+        _retryOptions = retryOptions.Value;
     }
 
     [Function("Diagnostics")]
@@ -36,5 +41,14 @@ public sealed class DiagnosticsFunction
         }
 
         return new OkObjectResult(rules);
+    }
+
+    [Function("DiagnosticsRetryOptions")]
+    public IActionResult RunRetryOptions(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "diagnostics/retry-options")] HttpRequest req)
+    {
+        _logger.LogInformation("Bound RetryOptions.MaxRetries = {MaxRetries}", _retryOptions.MaxRetries);
+
+        return new OkObjectResult(new { _retryOptions.MaxRetries });
     }
 }

@@ -1,3 +1,4 @@
+using OrderProcessor;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,5 +22,15 @@ builder.Services.Configure<LoggerFilterOptions>(options =>
         options.Rules.Remove(defaultRule);
     }
 });
+
+builder.Services.Configure<RetryOptions>(builder.Configuration.GetSection("Retry"));
+
+// Demo switch for docs/target-net10.md: a Scoped-in-Singleton registration that
+// only fails Build() under ValidateOnBuild/ValidateScopes (Development).
+if (string.Equals(Environment.GetEnvironmentVariable("ENABLE_BAD_DI_REGISTRATION"), "true", StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddScoped<IScopedDependency, ScopedDependency>();
+    builder.Services.AddSingleton<SingletonConsumer>();
+}
 
 builder.Build().Run();
