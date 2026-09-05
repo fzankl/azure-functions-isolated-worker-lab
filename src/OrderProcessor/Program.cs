@@ -6,9 +6,14 @@ var builder = FunctionsApplication.CreateBuilder(args);
 
 builder.ConfigureFunctionsWebApplication();
 
-// Variante B: auf Newtonsoft bleiben, aber in der Schicht, die die Antwort
-// tatsächlich schreibt. Das ist die MVC-Formatierschicht von ASP.NET Core,
-// nicht WorkerOptions.Serializer. Siehe docs/serializer-attributes.md.
+// Variante C: unverändert gegenüber Variante B. Der Schalter für die Antwort
+// ist derselbe; neu ist nur, dass [FromBody] in OrderFunction.cs jetzt auch den
+// Eingang über diese Schicht laufen lässt.
+//
+// Bewusst OHNE ContractResolver. DefaultContractResolver würde PascalCase
+// liefern - das In-Process-Modell hat aber camelCase geliefert, siehe
+// docs/baseline-inprocess.md. Der Resolver würde die Übereinstimmung mit dem
+// alten Vertrag also zerstören statt herstellen.
 builder.Services.AddControllers().AddNewtonsoftJson();
 
 builder.Build().Run();
