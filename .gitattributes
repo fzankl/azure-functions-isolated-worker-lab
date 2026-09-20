@@ -7,3 +7,8 @@
 *.ps1 text eol=crlf
 *.cmd text eol=crlf
 *.bat text eol=crlf
+
+# Exclude the helper scripts from the GitHub language statistics.
+# Without this, PowerShell and Shell dominate the language bar of a C# repository.
+*.ps1 linguist-vendored
+*.sh linguist-vendored
