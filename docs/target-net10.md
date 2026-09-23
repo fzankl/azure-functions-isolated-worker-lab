@@ -46,9 +46,16 @@ Enabled via `ConfigureContainer`, the validation also applies under `Production`
 
 `src/OrderProcessor/RetryOptions.cs` sets `MaxRetries` to `3`, `appsettings.json` contains `"Retry": { "MaxRetries": null }`, bound via `builder.Services.Configure<RetryOptions>(builder.Configuration.GetSection("Retry"))`.
 
-`GET /api/diagnostics/retry-options` returns `{"maxRetries":0}`, log line: `Bound RetryOptions.MaxRetries = 0`. Before .NET 10, the same binding failed with an `InvalidOperationException` according to the breaking change page. `3` only remains if `appsettings.json` is not loaded at all: `new HostBuilder()` returns `{"maxRetries":3}`, while `FunctionsApplication.CreateBuilder(args)` and `Host.CreateDefaultBuilder(args)` return `0`. Adding `AddJsonFile("appsettings.json")` to `new HostBuilder()` also returns `0`, so the cause is the builder's default configuration sources, not a missing file.
+`GET /api/diagnostics/retry-options` returns `{"maxRetries":0}`, log line: `Bound RetryOptions.MaxRetries = 0`. `3` only remains if `appsettings.json` is not loaded at all: `new HostBuilder()` returns `{"maxRetries":3}`, while `FunctionsApplication.CreateBuilder(args)` and `Host.CreateDefaultBuilder(args)` return `0`. Adding `AddJsonFile("appsettings.json")` to `new HostBuilder()` also returns `0`, so the cause is the builder's default configuration sources, not a missing file.
 
-This is the only case in the repository whose behavior changes with the .NET version and not with the execution model.
+Each row below is a separate run of the same console project outside both repositories, using SDK 10.0.400, with the same `appsettings.json` containing `"MaxRetries": null`, the same options class with default `3`, and target framework `net8.0`. Only the package version differs, and neither row is taken from the breaking change page:
+
+| `Microsoft.Extensions.Configuration.Json` and `.Binder` | Result                                                                                                           |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| 9.0.0                                                   | `InvalidOperationException: Failed to convert configuration value at 'Retry:MaxRetries' to type 'System.Int32'.`  |
+| 10.0.0                                                  | `MaxRetries = 0`                                                                                                 |
+
+The case therefore hangs on the package version, not on the target framework. An application on `net8.0` gets the silent `0` as soon as it pulls the 10 packages. This is the only case in the repository whose behavior changes with the package generation and not with the execution model.
 
 ## Build SDK and `dotnet run`
 
