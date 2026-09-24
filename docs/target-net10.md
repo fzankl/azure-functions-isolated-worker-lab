@@ -40,6 +40,21 @@ With `AZURE_FUNCTIONS_ENVIRONMENT=Production`, the app starts, and the incorrect
 
 Enabled via `ConfigureContainer`, the validation also applies under `Production` (not part of the tag): The worker terminates during `Build()` with `dotnet.exe exited with code -532462766 (0xE0434352)` and the same `AggregateException`; the host restarts it multiple times and ends at `Starting worker process failed`. Without the incorrect registration, the same variant starts cleanly with all three functions; `ValidateScopes` therefore does not interfere with the resolution in the worker.
 
+### Factory registration and the in-process comparison
+
+Not part of any tag, each on a copy outside this repository with a probe function that resolves the singleton per call. Isolated: same versions as above. In-process: `baseline-inprocess` plus a `FunctionsStartup` (`Microsoft.Azure.Functions.Extensions` 1.1.0), host `4.851.100.26305`, Core Tools 4.13.0.
+
+| Registration | Isolated, `Development` | Isolated, `Production` | In-process, `Development` and `Production` |
+| --- | --- | --- | --- |
+| `AddSingleton<IConsumer, ScopedConsumer>()` | startup fails, `AggregateException` | 200, same scoped instance on every call | host starts, every call 500 |
+| `AddSingleton<IConsumer, SnapshotConsumer>()` (`IOptionsSnapshot<T>`) | startup fails, `AggregateException` | 200 | host starts, every call 500 |
+| `AddSingleton<IConsumer>(sp => new ScopedConsumer(sp.GetRequiredService<IScopedDependency>()))` | host starts, every call 500 | 200, same scoped instance on every call | 200, same scoped instance on every call |
+| `AddSingleton<IConsumer>(sp => new SnapshotConsumer(sp.GetRequiredService<IOptionsSnapshot<PriceOptions>>()))` | host starts, every call 500 | 200 | 200 |
+
+Isolated factory error, literally: `System.InvalidOperationException: Cannot resolve scoped service 'OrderProcessor.IScopedDependency' from root provider.` `ValidateOnBuild` does not look inside the lambda; only `ValidateScopes` catches it, on resolution.
+
+In-process error, from the host's DryIoc container, literally: `Dependency OrderProcessor.IScopedDependency {ReturnDefault} as parameter "dependency" reuse CurrentScopeReuse {Lifespan=100} lifespan shorter than its parent's: singleton OrderProcessor.ScopedConsumer: OrderProcessor.IConsumer {ReturnDefault} #158`. The in-process host therefore checked lifetimes on resolution in every environment; only the factory registration passed it.
+
 **Not a .NET 10 case:** The automatic validation depends on the 2.x generation of the worker, not the .NET version. It is included here because it was checked in the target state.
 
 ## `null` in the Configuration (`RetryOptions`)
