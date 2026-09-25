@@ -31,7 +31,7 @@ builder.AddAzureFunctionsProject<Projects.OrderProcessor>("orderprocessor")
 
 ## The Build SDK Is Not Visible to Aspire
 
-`AddAzureFunctionsProject<Projects.OrderProcessor>` accepts a project with `Azure.Functions.Sdk` unchanged. The prerequisite for integration is the isolated execution model, not a specific build SDK.
+`AddAzureFunctionsProject<Projects.OrderProcessor>` accepts a project with `Azure.Functions.Sdk` unchanged. The prerequisite for integration is the isolated execution model, not a specific build SDK. The integration also requires `Program.cs` to use `FunctionsApplication.CreateBuilder(args)`; an app that still starts with `new HostBuilder()` has to switch first.
 
 A peculiarity only affects this path. If the AppHost is built without the Functions project being restored independently beforehand, the build will report:
 
@@ -68,6 +68,7 @@ docker ps -a --format "{{.Names}}" | Where-Object { $_ -like 'storage-*' } | For
 
 ## Sources
 
+- [Azure Functions with Aspire](https://learn.microsoft.com/en-us/azure/azure-functions/aspire-integration)
 - [Aspire: Azure Functions integration - Get started](https://aspire.dev/integrations/cloud/azure/azure-functions/azure-functions-get-started/)
 - [Aspire: Set up Azure Functions in the AppHost](https://aspire.dev/integrations/cloud/azure/azure-functions/azure-functions-host/)
 - [AZFW0108: Extension bundle not restored before build](https://learn.microsoft.com/en-us/azure/azure-functions/errors-diagnostics/msbuild-sdk-rules/azfw0108)
