@@ -23,6 +23,8 @@ builder.AddAzureFunctionsProject<Projects.OrderProcessor>("orderprocessor")
 
 `RunAsEmulator()` has Aspire start and manage an Azurite container itself. `WithHostStorage(storage)` connects the Function App's `AzureWebJobsStorage` to this emulator, and `WithReference(queues)` passes the connection information for the queue binding.
 
+`WithHostStorage` is optional. Without it, `AddAzureFunctionsProject` adds a storage resource of its own for the Functions host, named `funcstorage` plus a short hash, and Aspire starts a second Azurite container for it. The host then writes its `azure-webjobs-hosts` data to that second emulator instead of the shared one; `POST /api/orders` still answers 200. This repository calls `WithHostStorage` so that the host and the queue share one emulator.
+
 ## Trying It Out
 
 `dotnet run` in the directory `aspire/OrderProcessor.AppHost` starts the Azurite container and the Function App. The Function App does not run on port 7071, but on a port that Aspire assigns anew each time it starts. This port is displayed in the dashboard (URL in the console output) for the resource `orderprocessor`. By replacing `localhost:7071` in `http/target-net10.http` with this port, you will receive the same responses for `POST /api/orders` and `GET /api/diagnostics/log-filters` as in the target state, without modifying the Function App's code.
@@ -54,7 +56,7 @@ The warning is not fatal; the AppHost will still start with it.
 
 ## Cleanup
 
-After stopping the AppHost (Ctrl+C), the `storage-<id>` container started by Aspire remains.
+After stopping the AppHost (Ctrl+C), the `storage-<id>` container started by Aspire remains. If you removed `WithHostStorage`, a `funcstorage<hash>-<id>` container remains as well; adjust the name filter below accordingly.
 
 ```bash
 docker ps -a --format "{{.Names}}" | grep '^storage-' | xargs -r docker rm -f
@@ -66,6 +68,6 @@ docker ps -a --format "{{.Names}}" | Where-Object { $_ -like 'storage-*' } | For
 
 ## Sources
 
-- [Aspire: Azure Functions integration – Get started](https://aspire.dev/integrations/cloud/azure/azure-functions/azure-functions-get-started/)
+- [Aspire: Azure Functions integration - Get started](https://aspire.dev/integrations/cloud/azure/azure-functions/azure-functions-get-started/)
 - [Aspire: Set up Azure Functions in the AppHost](https://aspire.dev/integrations/cloud/azure/azure-functions/azure-functions-host/)
 - [AZFW0108: Extension bundle not restored before build](https://learn.microsoft.com/en-us/azure/azure-functions/errors-diagnostics/msbuild-sdk-rules/azfw0108)
