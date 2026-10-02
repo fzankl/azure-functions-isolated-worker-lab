@@ -31,17 +31,19 @@ The demo path runs through Variant B, because the explicit read operation makes 
 
 ## Three Input Paths
 
-Each cell is a separate build with the same DTO (`[JsonProperty("customer_name")]`) and the same invocation. All builds run with 0 errors and 0 warnings. The table shows whether `CustomerName` is bound:
+Each column is a separate build with the same DTO (`[JsonProperty("customer_name")]`) and the same invocation. All builds run with 0 errors and 0 warnings. The table shows whether `CustomerName` is bound:
 
-| Input Path                                                | Default | `WorkerOptions.Serializer` | `AddControllers().AddNewtonsoftJson()` |
-| --------------------------------------------------------- | ------- | -------------------------- | -------------------------------------- |
-| `await req.ReadFromJsonAsync<T>()`                        | `null`  | `null`                     | `null`                                 |
-| `[FromBody]` from `Microsoft.Azure.Functions.Worker.Http` | `null`  | `null`                     | **`"Ada"`**                            |
-| `[FromBody]` from `Microsoft.AspNetCore.Mvc`              | `null`  | `null`                     | `null`                                 |
+| Input Path                                                | Default   | `WorkerOptions.Serializer` | `AddMvc().AddNewtonsoftJson()` |
+| --------------------------------------------------------- | --------- | -------------------------- | ------------------------------ |
+| `await req.ReadFromJsonAsync<T>()`                        | `null`    | `null`                     | `null`                         |
+| `[FromBody]` from `Microsoft.Azure.Functions.Worker.Http` | `null`    | `null`                     | **`"Ada"`**                    |
+| `[FromBody]` from `Microsoft.AspNetCore.Mvc`              | not bound | not bound                  | not bound                      |
 
-Variant C, and therefore the tag `serializer-attributes-fixed-frombody`, follows from this table: `[FromBody]` from the worker namespace is the only input path that `AddNewtonsoftJson()` also fixes. `[FromBody]` from `Microsoft.AspNetCore.Mvc` compiles without warnings and does not bind. If both namespaces are visible, the compiler reports `error CS0104`.
+The third column uses `AddMvc()`, the call the guide names. The tags register `AddControllers().AddNewtonsoftJson()`, which binds the same way. The results are identical on `net8.0` and `net10.0`.
 
-The middle row confirms the maintainer's statement from issue #2131: `[FromBody]` from the worker namespace remains `null` even when `WorkerOptions.Serializer` is set.
+Variant C, and therefore the tag `serializer-attributes-fixed-frombody`, follows from this table: `[FromBody]` from the worker namespace is the only input path that `AddNewtonsoftJson()` also fixes. `[FromBody]` from `Microsoft.AspNetCore.Mvc` compiles without warnings and does not bind, the whole parameter stays `null`. If both namespaces are visible, the compiler reports `error CS0104`.
+
+The middle row confirms the maintainer's statement from issue #2131: with `[FromBody]` from the worker namespace, `CustomerName` remains `null` even when `WorkerOptions.Serializer` is set.
 
 ## Three Cross-Checks
 
@@ -97,6 +99,7 @@ There were no `Synchronous operations are disallowed` lines in the host log. The
 
 - [Guide for running C# Azure Functions in an isolated worker process](https://learn.microsoft.com/en-us/azure/azure-functions/dotnet-isolated-process-guide)
 - [MicrosoftDocs/azure-docs#128734](https://github.com/MicrosoftDocs/azure-docs/pull/128734): note in the migration guide that Newtonsoft attributes are ignored silently
+- [MicrosoftDocs/azure-docs#128829](https://github.com/MicrosoftDocs/azure-docs/pull/128829)
 - [Azure/azure-functions-dotnet-worker#2131](https://github.com/Azure/azure-functions-dotnet-worker/issues/2131)
 - [Azure/azure-functions-dotnet-worker#1979](https://github.com/Azure/azure-functions-dotnet-worker/issues/1979)
 - A [blog post by Edi Wang](https://edi.wang/post/2024/2/7/json-serialization-caveat-in-azure-function) from February 2024 describes that Azure Functions binds with Newtonsoft by default. This does not apply to the pattern being tested here.

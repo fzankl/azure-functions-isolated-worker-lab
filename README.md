@@ -42,11 +42,13 @@ The in-process host serializes `IActionResult` with Newtonsoft and a **camelCase
 
 Same DTO, same request. Whether `CustomerName` binds:
 
-| Input path                                                  | default | `WorkerOptions.Serializer` | `AddControllers().AddNewtonsoftJson()` |
-| ----------------------------------------------------------- | ------- | -------------------------- | -------------------------------------- |
-| `await req.ReadFromJsonAsync<T>()`                          | `null`  | `null`                     | `null`                                 |
-| `[FromBody] T` from `Microsoft.Azure.Functions.Worker.Http` | `null`  | `null`                     | **`"Ada"`**                            |
-| `[FromBody] T` from `Microsoft.AspNetCore.Mvc`              | `null`  | `null`                     | `null`                                 |
+| Input path                                                  | default   | `WorkerOptions.Serializer` | `AddMvc().AddNewtonsoftJson()` |
+| ----------------------------------------------------------- | --------- | -------------------------- | ------------------------------ |
+| `await req.ReadFromJsonAsync<T>()`                          | `null`    | `null`                     | `null`                         |
+| `[FromBody] T` from `Microsoft.Azure.Functions.Worker.Http` | `null`    | `null`                     | **`"Ada"`**                    |
+| `[FromBody] T` from `Microsoft.AspNetCore.Mvc`              | not bound | not bound                  | not bound                      |
+
+The third column uses `AddMvc()`, the call the guide names. The tags register `AddControllers().AddNewtonsoftJson()`, which binds the same way. With the MVC `[FromBody]`, the whole parameter stays `null`, not just the property.
 
 `AddNewtonsoftJson()` switches the **MVC formatter layer**. The worker's `[FromBody]` takes its deserialization from that layer, so the switch reaches it. `ReadFromJsonAsync` is the `Microsoft.AspNetCore.Http.Json` extension, hard-wired to System.Text.Json. Its options type exposes a single `JsonSerializerOptions` property, so there is no seam to plug Newtonsoft into.
 
